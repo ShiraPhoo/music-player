@@ -18,6 +18,7 @@ function App() {
   const [songTime, setSongTime] = useState({
     currentTime: 0,
     duration: 0,
+    animationPercentage: 0,
   });
 
   const [libraryToggle, setLibraryToggle] = useState(false);
@@ -25,8 +26,26 @@ function App() {
   function timeUpdateHandler(e) {
     const current = e.target.currentTime;
     const duration = e.target.duration;
-    setSongTime({ ...songTime, currentTime: current, duration });
+    // Calculate Percentage
+    const roundedCurrent = Math.round(current);
+    const roundedDuration = Math.round(duration);
+    const animation = Math.round((roundedCurrent / roundedDuration) * 100);
+    console.log(animation);
+    setSongTime({
+      ...songTime,
+      currentTime: current,
+      duration,
+      animationPercentage: animation,
+    });
   }
+
+  async function songEndedHandler() {
+    let currentIndex = songs.findIndex((song) => song.id === currentSong.id);
+    await setCurrentSong(songs[(currentIndex + 1) % songs.length]);
+
+    if (isPlaying) audioRef.current.play();
+  }
+
   return (
     <div className="App">
       <Nav libraryToggle={libraryToggle} setLibraryToggle={setLibraryToggle} />
@@ -57,6 +76,7 @@ function App() {
         onLoadedMetadata={timeUpdateHandler}
         ref={audioRef}
         src={currentSong.audio}
+        onEnded={songEndedHandler}
       ></audio>
     </div>
   );

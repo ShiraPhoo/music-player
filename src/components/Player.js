@@ -7,8 +7,6 @@ import {
   faPause,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { playAudio } from "../util";
-
 function Player({
   isPlaying,
   setIsPlaying,
@@ -27,6 +25,10 @@ function Player({
     // console.log(Math.floor(time / 60) + ":" + ("0" + Math.floor(time % 60)));
   };
 
+  const trackAnimation = {
+    transform: `translateX(${songTime.animationPercentage}%)`,
+  };
+
   useEffect(() => {
     const newSongs = songs.map((song) => {
       if (song.id === currentSong.id) {
@@ -43,22 +45,23 @@ function Player({
     });
     setSongs(newSongs);
   }, [currentSong]);
-  function skipHandler(direction) {
+
+  async function skipHandler(direction) {
     let currentIndex = songs.findIndex((song) => song.id === currentSong.id);
     if (direction === "skip-forward") {
-      setCurrentSong(songs[(currentIndex + 1) % songs.length]);
+      await setCurrentSong(songs[(currentIndex + 1) % songs.length]);
       console.log(`next index is ${currentIndex}`);
       console.log(`song length is ${songs.length}`);
     }
     if (direction === "skip-back") {
       if ((currentIndex - 1) % songs.length === -1) {
-        setCurrentSong(songs[songs.length - 1]);
-        playAudio(isPlaying, audioRef);
+        await setCurrentSong(songs[songs.length - 1]);
+        if (isPlaying) audioRef.current.play();
         return;
       }
-      setCurrentSong(songs[(currentIndex - 1) % songs.length]);
+      await setCurrentSong(songs[(currentIndex - 1) % songs.length]);
     }
-    playAudio(isPlaying, audioRef);
+    if (isPlaying) audioRef.current.play();
   }
 
   function inputSliderDragHandler(e) {
@@ -79,13 +82,22 @@ function Player({
     <div className="player-container">
       <div className="time-control">
         <p>{getTimeFormat(songTime.currentTime)}</p>
-        <input
-          min={0}
-          max={songTime.duration || 0}
-          value={songTime.currentTime}
-          onChange={inputSliderDragHandler}
-          type="range"
-        />
+        <div
+          style={{
+            background: `linear-gradient(to right, ${currentSong.color[0]}, ${currentSong.color[1]})`,
+          }}
+          className="track"
+        >
+          <input
+            min={0}
+            max={songTime.duration || 0}
+            value={songTime.currentTime}
+            onChange={inputSliderDragHandler}
+            type="range"
+          />
+          <div style={trackAnimation} className="animate-track"></div>
+        </div>
+
         <p>{songTime.duration ? getTimeFormat(songTime.duration) : "0:00"}</p>
       </div>
 
