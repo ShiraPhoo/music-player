@@ -47,9 +47,9 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div className={`App ${libraryToggle ? "library-active" : ""}`}>
       <Nav libraryToggle={libraryToggle} setLibraryToggle={setLibraryToggle} />
-      <Song currentSong={currentSong} />
+      <Song currentSong={currentSong} isPlaying={isPlaying} />
       <Player
         currentSong={currentSong}
         isPlaying={isPlaying}
